@@ -7,6 +7,7 @@
 using namespace std;
 
 void get_URL(const string &host, const string &path) {
+
     
     TCPSocket socket;
 
@@ -18,6 +19,7 @@ void get_URL(const string &host, const string &path) {
         cout << socket.read();
     }
     socket.close();
+
     return;
 }
 
