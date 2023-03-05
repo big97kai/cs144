@@ -2,38 +2,24 @@
 #define SPONGE_LIBSPONGE_BYTE_STREAM_HH
 
 #include <string>
-
-<<<<<<< HEAD
-//! \brief An in-order byte stream.
-=======
-
->>>>>>> 44e2c35e4863b9df3868812b23d48e24b90de6ef
+#include <deque>
 
 //! Bytes are written on the "input" side and read from the "output"
 //! side.  The byte stream is finite: the writer can end the input,
 //! and then no more bytes can be written.
 class ByteStream {
   private:
-<<<<<<< HEAD
-    // Your code here -- add private members as necessary.
 
-    // Hint: This doesn't need to be a sophisticated data structure at
-    // all, but if any of your tests are taking longer than a second,
-    // that's a sign that you probably want to keep exploring
-    // different approaches.
-
-=======
-
-    const size_t capacity;
-    std::deque<char> buffer;
+    const size_t mCapacity;
+    std::deque<char> buffer = {};
     size_t writeCharNumber = 0;
     size_t readCharNumber = 0;
->>>>>>> 44e2c35e4863b9df3868812b23d48e24b90de6ef
-    bool _error{};  //!< Flag indicating that the stream suffered an error.
+    bool _endInput = false;
+    bool _error = false;  //!< Flag indicating that the stream suffered an error.
 
   public:
     //! Construct a stream with room for `capacity` bytes.
-    ByteStream(const size_t capacity);
+    ByteStream(const size_t capacity): mCapacity(capacity) {};
 
     //! \name "Input" interface for the writer
     //!@{
