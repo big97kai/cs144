@@ -81,7 +81,7 @@ void StreamReassembler::insert_into_unsorted(const string &data, const size_t in
     for (auto &key : vec) {
         _unsorted_data.erase(key);
     }
-    
+
     _unsorted_data[_index] = _str;
 }
 //! \details This function accepts a substring (aka a segment) of bytes,
@@ -107,7 +107,7 @@ void StreamReassembler::push_substring(const string &data, const size_t index, c
             string str = string().assign(data.begin(), data.begin() + data.size() - (_data_end_index - _remaining_capacity));
             insert_into_unsorted(str, index);
         }else{
-
+            
             insert_into_unsorted(data, index);
         }
 

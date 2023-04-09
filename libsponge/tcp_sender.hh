@@ -6,9 +6,60 @@
 #include "tcp_segment.hh"
 #include "wrapping_integers.hh"
 
+#include <iostream>
 #include <functional>
 #include <queue>
 
+class Timer {
+
+  private:
+
+    unsigned int _initial_time;
+    unsigned int _elapsed_time{0};
+
+    bool _is_running{true};
+    unsigned int _retransmissions_time{0};
+
+  public:
+    
+    Timer(size_t initial_time): _initial_time(initial_time) {};
+
+    Timer(): _initial_time(0) {};
+
+    void set_initial_time(size_t time){ _initial_time = time; };
+
+    bool check_eclipese(size_t ms_since_last_tick){
+
+      _elapsed_time = _elapsed_time + static_cast<unsigned int>(ms_since_last_tick);
+
+      return _elapsed_time >= _initial_time;
+    };
+
+    bool is_running(){ return _is_running; };
+
+    void set_running(){ _is_running = true; };
+
+    void set_stopping() { _is_running = false; };
+
+    void double_time() { _initial_time *= 2; };
+
+    void set_initial(unsigned int _initial_retransmission_timeout) { 
+
+      _initial_time = _initial_retransmission_timeout;
+      _retransmissions_time = 0;
+      _elapsed_time = 0;
+    };
+
+    void set_zero(){
+
+      _elapsed_time = 0;
+    }
+
+    unsigned int get_retransmissions_time() const { return _retransmissions_time; };
+
+    void add_retransmissions_time(){_retransmissions_time++;};
+
+};
 //! \brief The "sender" part of a TCP implementation.
 
 //! Accepts a ByteStream, divides it up into segments and sends the
@@ -22,7 +73,7 @@ class TCPSender {
 
     //! outbound queue of segments that the TCPSender wants sent
     std::queue<TCPSegment> _segments_out{};
-
+    std::queue<TCPSegment> _outstanding_segments{};
     //! retransmission timer for the connection
     unsigned int _initial_retransmission_timeout;
 
@@ -31,6 +82,14 @@ class TCPSender {
 
     //! the (absolute) sequence number for the next byte to be sent
     uint64_t _next_seqno{0};
+    uint64_t _highest_seqno{0};
+
+    uint64_t _checkpoint{0};
+    uint64_t _absolute_ack{0};
+
+    size_t _window_size{1};
+    bool _windows_zero_flag{false};
+    Timer _timer;
 
   public:
     //! Initialize a TCPSender
@@ -40,8 +99,8 @@ class TCPSender {
 
     //! \name "Input" interface for the writer
     //!@{
-    ByteStream &stream_in() { return _stream; }
-    const ByteStream &stream_in() const { return _stream; }
+    ByteStream &stream_in() { return _stream; };
+    const ByteStream &stream_in() const { return _stream; };
     //!@}
 
     //! \name Methods that can cause the TCPSender to send a segment
@@ -75,17 +134,17 @@ class TCPSender {
     //! \note These must be dequeued and sent by the TCPConnection,
     //! which will need to fill in the fields that are set by the TCPReceiver
     //! (ackno and window size) before sending.
-    std::queue<TCPSegment> &segments_out() { return _segments_out; }
+    std::queue<TCPSegment> &segments_out() { return _segments_out; };
     //!@}
 
     //! \name What is the next sequence number? (used for testing)
     //!@{
 
     //! \brief absolute seqno for the next byte to be sent
-    uint64_t next_seqno_absolute() const { return _next_seqno; }
+    uint64_t next_seqno_absolute() const { return _next_seqno; };
 
     //! \brief relative seqno for the next byte to be sent
-    WrappingInt32 next_seqno() const { return wrap(_next_seqno, _isn); }
+    WrappingInt32 next_seqno() const { return wrap(_next_seqno, _isn); };
     //!@}
 };
 
