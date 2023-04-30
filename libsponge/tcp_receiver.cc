@@ -28,7 +28,6 @@ void TCPReceiver::segment_received(const TCPSegment &seg) {
     uint64_t _index;
     _sequnce = unwrap(seg.header().seqno, _isn, _checkpoint);
 
-
     _index = _sequnce;
 
     if(_syn && !seg.header().syn){

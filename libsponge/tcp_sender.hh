@@ -14,24 +14,24 @@ class Timer {
 
   private:
 
-    unsigned int _initial_time;
-    unsigned int _elapsed_time{0};
+    uint16_t _initial_time;
+    uint16_t _elapsed_time{0};
 
     bool _is_running{true};
     unsigned int _retransmissions_time{0};
 
   public:
     
-    Timer(size_t initial_time): _initial_time(initial_time) {};
+    Timer(uint16_t initial_time): _initial_time(initial_time) {};
 
     Timer(): _initial_time(0) {};
 
-    void set_initial_time(size_t time){ _initial_time = time; };
+    void set_initial_time(uint16_t time){ _initial_time = time; };
 
     bool check_eclipese(size_t ms_since_last_tick){
 
-      _elapsed_time = _elapsed_time + static_cast<unsigned int>(ms_since_last_tick);
-
+      _elapsed_time = _elapsed_time + static_cast<uint16_t>(ms_since_last_tick);
+      
       return _elapsed_time >= _initial_time;
     };
 
@@ -82,7 +82,6 @@ class TCPSender {
 
     //! the (absolute) sequence number for the next byte to be sent
     uint64_t _next_seqno{0};
-    uint64_t _highest_seqno{0};
 
     uint64_t _checkpoint{0};
     uint64_t _absolute_ack{0};
@@ -91,6 +90,8 @@ class TCPSender {
     bool _windows_zero_flag{false};
     Timer _timer;
 
+    bool _syn{false};
+    bool _fin{false};
   public:
     //! Initialize a TCPSender
     TCPSender(const size_t capacity = TCPConfig::DEFAULT_CAPACITY,
@@ -110,7 +111,7 @@ class TCPSender {
     void ack_received(const WrappingInt32 ackno, const uint16_t window_size);
 
     //! \brief Generate an empty-payload segment (useful for creating empty ACK segments)
-    void send_empty_segment();
+    void send_empty_segment(bool rst);
 
     //! \brief create and send segments to fill as much of the window as possible
     void fill_window();
@@ -146,6 +147,10 @@ class TCPSender {
     //! \brief relative seqno for the next byte to be sent
     WrappingInt32 next_seqno() const { return wrap(_next_seqno, _isn); };
     //!@}
+
+    void add_windows_size(){ _window_size++; };
+
+    void setInitialTimer(){ _timer.set_initial_time(_initial_retransmission_timeout); };
 };
 
 #endif  // SPONGE_LIBSPONGE_TCP_SENDER_HH
